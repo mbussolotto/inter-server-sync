@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bufio"
+	"fmt"
 	"github.com/rs/zerolog/log"
 	"os"
 	"path/filepath"
@@ -42,3 +44,36 @@ func GetAbsPath(path string) string{
 	}
 	return result
 }
+
+func GetCurrentServerVersion() string {
+	var version string
+	// var uversion string
+	path := "/usr/share/rhn/config-defaults/rhn_web.conf"
+
+	f, err := os.Open(path)
+	if err != nil {
+		log.Fatal().Msg("Couldn't find rhn_web.conf")
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "web.version = ") {
+			version = scanner.Text()
+			splits := strings.Split(version, "= ")
+			version = splits[len(splits)-1]
+			fmt.Printf("Found string: %s", version)
+		}
+		/*
+		if strings.Contains(scanner.Text(), "web.version.uyuni = ") {
+			uversion = scanner.Text()
+			splits := strings.Split(uversion, "= ")
+			uversion = splits[len(splits)-1]
+			fmt.Printf("Found string: %s", uversion)
+		}
+		*/
+	}
+	return version
+}
+
+
+

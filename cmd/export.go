@@ -4,6 +4,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/uyuni-project/inter-server-sync/entityDumper"
+	"github.com/uyuni-project/inter-server-sync/utils"
+	"os"
 	"strings"
 )
 
@@ -39,6 +41,18 @@ func runExport(cmd *cobra.Command, args []string) {
 		OutputFolder: outputDir,
 		MetadataOnly: metadataOnly,
 	}
-
 	entityDumper.DumpChannelData(options)
+	var versionfile string
+	versionfile = options.GetOutputFolderAbsPath() + "/version.txt"
+	vf, err := os.OpenFile(versionfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	defer vf.Close()
+	if os.IsNotExist(err) {
+		f, err := os.Create(versionfile)
+		if err != nil {
+			log.Fatal().Msg("Unable to create version file")
+		}
+		vf = f
+	}
+
+	vf.WriteString(utils.GetCurrentServerVersion() + "\n")
 }
