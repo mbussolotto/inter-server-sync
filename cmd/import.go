@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/uyuni-project/inter-server-sync/utils"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 var importCmd = &cobra.Command{
@@ -26,11 +28,33 @@ func init() {
 func runImport(cmd *cobra.Command, args []string) {
 	absImportDir := utils.GetAbsPath(importDir)
 	log.Info().Msg(fmt.Sprintf("starting import from dir %s", absImportDir))
+	fileversion := getVersion(absImportDir)
+	fmt.Printf("%s", fileversion)
 	validateFolder(absImportDir)
 	runPackageFileSync(absImportDir)
 	runImportSql(absImportDir)
 	log.Info().Msg("import finished")
 }
+
+func getVersion(path string) string{
+	var versionfile string
+	var v string
+	versionfile = path + "/version.txt"
+	f, err := os.Open(versionfile)
+	if err != nil {
+		log.Error().Msg("version.txt not found.")
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+			v := scanner.Text()
+			splits := strings.Split(v, "\n")
+			v = splits[0]
+			continue
+	}
+	return v
+	}
+
 
 func validateFolder(absImportDir string) {
 	_, err := os.Stat(fmt.Sprintf("%s/sql_statements.sql", absImportDir))
