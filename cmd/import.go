@@ -29,7 +29,12 @@ func runImport(cmd *cobra.Command, args []string) {
 	absImportDir := utils.GetAbsPath(importDir)
 	log.Info().Msg(fmt.Sprintf("starting import from dir %s", absImportDir))
 	fileversion := getVersion(absImportDir)
-	fmt.Printf("%s", fileversion)
+	serverversion := utils.GetCurrentServerVersion()
+	if fileversion == serverversion {
+		log.Debug().Msg("Same version")
+	} else {
+		log.Debug().Msg("Wrong version")
+	}
 	validateFolder(absImportDir)
 	runPackageFileSync(absImportDir)
 	runImportSql(absImportDir)
