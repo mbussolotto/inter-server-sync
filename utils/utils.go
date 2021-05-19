@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/rs/zerolog/log"
 	"os"
 	"path/filepath"
@@ -47,7 +46,7 @@ func GetAbsPath(path string) string{
 
 func GetCurrentServerVersion() string {
 	var version string
-	// var uversion string
+	//var uversion string
 	path := "/usr/share/rhn/config-defaults/rhn_web.conf"
 
 	f, err := os.Open(path)
@@ -61,7 +60,6 @@ func GetCurrentServerVersion() string {
 			version = scanner.Text()
 			splits := strings.Split(version, "= ")
 			version = splits[len(splits)-1]
-			fmt.Printf("Found string: %s", version)
 		}
 		/*
 		if strings.Contains(scanner.Text(), "web.version.uyuni = ") {

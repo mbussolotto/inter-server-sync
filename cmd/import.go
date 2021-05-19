@@ -8,7 +8,6 @@ import (
 	"github.com/uyuni-project/inter-server-sync/utils"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 var importCmd = &cobra.Command{
@@ -30,10 +29,9 @@ func runImport(cmd *cobra.Command, args []string) {
 	log.Info().Msg(fmt.Sprintf("starting import from dir %s", absImportDir))
 	fileversion := getVersion(absImportDir)
 	serverversion := utils.GetCurrentServerVersion()
-	if fileversion == serverversion {
-		log.Debug().Msg("Same version")
-	} else {
-		log.Debug().Msg("Wrong version")
+	if fileversion != serverversion {
+		log.Fatal().Msg("Wrong version detected")
+		os.Exit(0)
 	}
 	validateFolder(absImportDir)
 	runPackageFileSync(absImportDir)
@@ -52,9 +50,8 @@ func getVersion(path string) string{
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-			v := scanner.Text()
-			splits := strings.Split(v, "\n")
-			v = splits[0]
+			v = scanner.Text()
+			log.Debug().Msgf("Import Version: %s", v)
 			continue
 	}
 	return v
