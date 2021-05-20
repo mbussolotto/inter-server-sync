@@ -44,7 +44,7 @@ func runExport(cmd *cobra.Command, args []string) {
 	entityDumper.DumpChannelData(options)
 	var versionfile string
 	versionfile = options.GetOutputFolderAbsPath() + "/version.txt"
-	vf, err := os.OpenFile(versionfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	vf, err := os.Open(versionfile)
 	defer vf.Close()
 	if os.IsNotExist(err) {
 		f, err := os.Create(versionfile)
@@ -53,6 +53,6 @@ func runExport(cmd *cobra.Command, args []string) {
 		}
 		vf = f
 	}
-
-	vf.WriteString(utils.GetCurrentServerVersion() + "\n")
+	version, product, uyuni := utils.GetCurrentServerVersion()
+	vf.WriteString("product_name=" + product + "\n" + "version=" + version + "\n" + "uyuni_version=" + uyuni + "\n")
 }
