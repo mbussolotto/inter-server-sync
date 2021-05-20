@@ -46,12 +46,9 @@ func GetAbsPath(path string) string{
 
 func GetCurrentServerVersion() (string, string, string) {
 	var version,product,uyuni string
+	vpath := "/usr/share/rhn/config-defaults/rhn_web.conf"
+	ppath := "/usr/share/rhn/config-defaults/rhn.conf"
 
-	//var uversion string
-	//vpath := "/usr/share/rhn/config-defaults/rhn_web.conf"
-	//ppath := "/usr/share/rhn/config-defaults/rhn.conf"
-	vpath := "rhn_web.conf"
-	ppath := "norm.conf"
 
 	f, err := os.Open(vpath)
 	if err != nil {
@@ -60,14 +57,13 @@ func GetCurrentServerVersion() (string, string, string) {
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), "web.version = ") {
-			version = scanner.Text()
-			splits := strings.Split(version, "= ")
+		line := scanner.Text()
+		if strings.Contains(line, "web.version = ") {
+			splits := strings.Split(line, "= ")
 			version = splits[1]
 		}
-		if strings.Contains(scanner.Text(), "web.version.uyuni = ") {
-			uyuni = scanner.Text()
-			splits := strings.Split(uyuni, "= ")
+		if strings.Contains(line, "web.version.uyuni = ") {
+			splits := strings.Split(line, "= ")
 			uyuni = splits[1]
 		}
 	}
@@ -79,8 +75,7 @@ func GetCurrentServerVersion() (string, string, string) {
 	scanner = bufio.NewScanner(f)
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), "product_name = ") {
-			product = scanner.Text()
-			splits := strings.Split(product, "= ")
+			splits := strings.Split(scanner.Text(), "= ")
 			product = splits[1]
 		}
 	}

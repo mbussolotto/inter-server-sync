@@ -8,6 +8,7 @@ import (
 	"github.com/uyuni-project/inter-server-sync/utils"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 var importCmd = &cobra.Command{
@@ -27,9 +28,9 @@ func init() {
 func runImport(cmd *cobra.Command, args []string) {
 	absImportDir := utils.GetAbsPath(importDir)
 	log.Info().Msg(fmt.Sprintf("starting import from dir %s", absImportDir))
-	fileversion := getImportVersion(absImportDir)
-	serverversion, _, _ := utils.GetCurrentServerVersion()
-	if fileversion != serverversion {
+	fversion, fproduct , fuyuni := getImportVersion(absImportDir)
+	sversion, sproduct, suyuni := utils.GetCurrentServerVersion()
+	if fversion != sversion || fproduct != sproduct || fuyuni != suyuni {
 		log.Fatal().Msg("Wrong version detected")
 	}
 	validateFolder(absImportDir)
@@ -38,9 +39,9 @@ func runImport(cmd *cobra.Command, args []string) {
 	log.Info().Msg("import finished")
 }
 
-func getImportVersion(path string) string{
+func getImportVersion(path string) (string, string, string) {
 	var versionfile string
-	var v string
+	var version, product, uyuni string
 	versionfile = path + "/version.txt"
 	f, err := os.Open(versionfile)
 	if err != nil {
@@ -49,11 +50,22 @@ func getImportVersion(path string) string{
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-			v = scanner.Text()
-			log.Debug().Msgf("Import Version: %s", v)
-			continue
-	}
-	return v
+		line := scanner.Text()
+		if strings.Contains(line, "product_name=") {
+			splits := strings.Split(line, "=")
+			product = splits[1]
+		}
+		if strings.Contains(line, "version=") && strings.HasPrefix(line, "v") {
+			splits := strings.Split(line, "=")
+			version = splits[1]
+		}
+		if strings.Contains(line, "uyuni_version=") {
+			splits := strings.Split(line, "=")
+			uyuni = splits[1]
+		}
+		}
+			log.Debug().Msgf("Import Product: %s; Version: %s; Uyuni: %s", product, version, uyuni)
+	return version, product , uyuni
 	}
 
 
