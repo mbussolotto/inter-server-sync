@@ -44,43 +44,63 @@ func GetAbsPath(path string) string{
 	return result
 }
 
-func GetCurrentServerVersion() (string, string, string) {
-	var version,product,uyuni string
-	vpath := "/usr/share/rhn/config-defaults/rhn_web.conf"
-	ppath := "/usr/share/rhn/config-defaults/rhn.conf"
+func GetCurrentServerVersion() (string, string,) {
+	var version,product string
+	rhndefault := "/etc/rhn/rhn.conf"
+	webpath := "/usr/share/rhn/config-defaults/rhn_web.conf"
+	altpath := "/usr/share/rhn/config-defaults/rhn.conf"
 
-
-	f, err := os.Open(vpath)
+	product, err := ScannerFunc(rhndefault, "product_name = ")
 	if err != nil {
-		log.Fatal().Msg("Couldn't find rhn_web.conf")
+		product, err = ScannerFunc(altpath, "product_name = ")
+		if err != nil {
+
+			product = "SUSE Manager"
+		}
+	}
+
+	if product != "SUSE Manager"{
+		product = "uyuni"
+		v, err := ScannerFunc(rhndefault, "web.version.uyuni = ")
+			if err != nil {
+				v, err = ScannerFunc(webpath, "web.version.uyuni = ")
+				if err != nil {
+					log.Fatal().Msg("No version found")
+				}
+			}
+
+		version = v
+	} else if product == "SUSE Manager" {
+		v, err := ScannerFunc(rhndefault, "web.version = ")
+		if err != nil {
+			v, err = ScannerFunc(webpath, "web.version = ")
+		}
+		if err != nil {
+			log.Fatal().Msg("No version found")
+		}
+		version = v
+	}
+	return version, product
+}
+
+func ScannerFunc(path string, search string) (string, error){
+	var output string
+	var e error
+	f, err := os.Open(path)
+	if err != nil {
+		log.Fatal().Msg("Couldn't open file")
 	}
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.Contains(line, "web.version = ") {
-			splits := strings.Split(line, "= ")
-			version = splits[1]
-		}
-		if strings.Contains(line, "web.version.uyuni = ") {
-			splits := strings.Split(line, "= ")
-			uyuni = splits[1]
-		}
+	line := scanner.Text()
+	if strings.Contains(line, search) {
+		splits := strings.Split(line, "= ")
+		output = splits[1]
+		return output, nil
+	} else {
+		return "", e
 	}
-	f, err = os.Open(ppath)
-	if err != nil {
-		log.Fatal().Msg("Couldn't find rhn.conf")
-	}
-	defer f.Close()
-	scanner = bufio.NewScanner(f)
-	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), "product_name = ") {
-			splits := strings.Split(scanner.Text(), "= ")
-			product = splits[1]
-		}
-	}
-	return version, product, uyuni
-}
 
+}
 
 

@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/uyuni-project/inter-server-sync/utils"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 var importCmd = &cobra.Command{
@@ -28,9 +26,9 @@ func init() {
 func runImport(cmd *cobra.Command, args []string) {
 	absImportDir := utils.GetAbsPath(importDir)
 	log.Info().Msg(fmt.Sprintf("starting import from dir %s", absImportDir))
-	fversion, fproduct , fuyuni := getImportVersion(absImportDir)
-	sversion, sproduct, suyuni := utils.GetCurrentServerVersion()
-	if fversion != sversion || fproduct != sproduct || fuyuni != suyuni {
+	fversion, fproduct := getImportVersion(absImportDir)
+	sversion, sproduct := utils.GetCurrentServerVersion()
+	if fversion != sversion || fproduct != sproduct {
 		log.Fatal().Msg("Wrong version detected")
 	}
 	validateFolder(absImportDir)
@@ -39,33 +37,19 @@ func runImport(cmd *cobra.Command, args []string) {
 	log.Info().Msg("import finished")
 }
 
-func getImportVersion(path string) (string, string, string) {
+func getImportVersion(path string) (string, string) {
 	var versionfile string
-	var version, product, uyuni string
 	versionfile = path + "/version.txt"
-	f, err := os.Open(versionfile)
+	version, err := utils.ScannerFunc(versionfile, "version = ")
 	if err != nil {
-		log.Error().Msg("version.txt not found.")
+		log.Error().Msg("Version not found.")
 	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.Contains(line, "product_name=") {
-			splits := strings.Split(line, "=")
-			product = splits[1]
-		}
-		if strings.Contains(line, "version=") && strings.HasPrefix(line, "v") {
-			splits := strings.Split(line, "=")
-			version = splits[1]
-		}
-		if strings.Contains(line, "uyuni_version=") {
-			splits := strings.Split(line, "=")
-			uyuni = splits[1]
-		}
-		}
-			log.Debug().Msgf("Import Product: %s; Version: %s; Uyuni: %s", product, version, uyuni)
-	return version, product , uyuni
+	product, err := utils.ScannerFunc(versionfile, "product_name = ")
+	if err != nil {
+		log.Fatal().Msg("Product not found")
+	}
+	log.Debug().Msgf("Import Product: %s; Version: %s; Uyuni: %s", product, version)
+	return version, product
 	}
 
 
