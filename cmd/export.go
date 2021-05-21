@@ -12,13 +12,14 @@ import (
 var exportCmd = &cobra.Command{
 	Use:   "export",
 	Short: "Export server entities to be imported in other server",
-	Run: runExport,
+	Run:   runExport,
 }
 
 var channels []string
 var channelWithChildren []string
 var outputDir string
 var metadataOnly bool
+
 func init() {
 	exportCmd.Flags().StringSliceVar(&channels, "channels", nil, "Channels to be exported")
 	exportCmd.Flags().StringSliceVar(&channelWithChildren, "channel-with-children", nil, "Channels to be exported")
@@ -35,11 +36,11 @@ func runExport(cmd *cobra.Command, args []string) {
 	// check output dir existance and create it if needed.
 
 	options := entityDumper.ChannelDumperOptions{
-		ServerConfig: serverConfig,
-		ChannelLabels: channels,
+		ServerConfig:              serverConfig,
+		ChannelLabels:             channels,
 		ChannelWithChildrenLabels: channelWithChildren,
-		OutputFolder: outputDir,
-		MetadataOnly: metadataOnly,
+		OutputFolder:              outputDir,
+		MetadataOnly:              metadataOnly,
 	}
 	entityDumper.DumpChannelData(options)
 	var versionfile string

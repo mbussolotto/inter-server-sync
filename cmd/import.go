@@ -12,7 +12,7 @@ import (
 var importCmd = &cobra.Command{
 	Use:   "import",
 	Short: "Import data to server",
-	Run: runImport,
+	Run:   runImport,
 }
 
 var importDir string
@@ -50,8 +50,7 @@ func getImportVersion(path string) (string, string) {
 	}
 	log.Debug().Msgf("Import Product: %s; Version: %s; Uyuni: %s", product, version)
 	return version, product
-	}
-
+}
 
 func validateFolder(absImportDir string) {
 	_, err := os.Stat(fmt.Sprintf("%s/sql_statements.sql", absImportDir))

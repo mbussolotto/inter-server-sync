@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/rs/zerolog/log"
 	"os"
 	"path/filepath"
@@ -28,7 +29,7 @@ func Contains(slice []string, elementToFind string) bool {
 	return false
 }
 
-func GetAbsPath(path string) string{
+func GetAbsPath(path string) string {
 	result := path
 	if filepath.IsAbs(path) {
 		result, _ = filepath.Abs(path)
@@ -44,30 +45,29 @@ func GetAbsPath(path string) string{
 	return result
 }
 
-func GetCurrentServerVersion() (string, string,) {
-	var version,product string
+func GetCurrentServerVersion() (string, string) {
+	var version, product string
 	rhndefault := "/etc/rhn/rhn.conf"
 	webpath := "/usr/share/rhn/config-defaults/rhn_web.conf"
 	altpath := "/usr/share/rhn/config-defaults/rhn.conf"
 
-	product, err := ScannerFunc(rhndefault, "product_name = ")
+	p, err := ScannerFunc(rhndefault, "product_name =")
 	if err != nil {
-		product, err = ScannerFunc(altpath, "product_name = ")
+		p, err = ScannerFunc(altpath, "product_name =")
 		if err != nil {
-
 			product = "SUSE Manager"
 		}
 	}
-
-	if product != "SUSE Manager"{
+	product = p
+	if product != "SUSE Manager" {
 		product = "uyuni"
 		v, err := ScannerFunc(rhndefault, "web.version.uyuni = ")
+		if err != nil {
+			v, err = ScannerFunc(webpath, "web.version.uyuni = ")
 			if err != nil {
-				v, err = ScannerFunc(webpath, "web.version.uyuni = ")
-				if err != nil {
-					log.Fatal().Msg("No version found")
-				}
+				log.Fatal().Msg("No version found")
 			}
+		}
 
 		version = v
 	} else if product == "SUSE Manager" {
@@ -83,24 +83,21 @@ func GetCurrentServerVersion() (string, string,) {
 	return version, product
 }
 
-func ScannerFunc(path string, search string) (string, error){
+func ScannerFunc(path string, search string) (string, error) {
 	var output string
-	var e error
 	f, err := os.Open(path)
 	if err != nil {
 		log.Fatal().Msg("Couldn't open file")
 	}
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
-	line := scanner.Text()
-	if strings.Contains(line, search) {
-		splits := strings.Split(line, "= ")
-		output = splits[1]
-		return output, nil
-	} else {
-		return "", e
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), search) {
+			splits := strings.Split(scanner.Text(), "= ")
+			output = splits[1]
+			fmt.Printf("output: %s\n", output)
+			return output, nil
+		}
 	}
-
+	return "", fmt.Errorf("String not found!")
 }
-
-
