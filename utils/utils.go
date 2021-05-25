@@ -51,32 +51,38 @@ func GetCurrentServerVersion() (string, string) {
 	webpath := "/usr/share/rhn/config-defaults/rhn_web.conf"
 	altpath := "/usr/share/rhn/config-defaults/rhn.conf"
 
-	p, err := ScannerFunc(rhndefault, "product_name =")
-	if err != nil {
-		p, err = ScannerFunc(altpath, "product_name =")
-		if err != nil {
-			product = "SUSE Manager"
-		}
-	}
-	product = p
-	if product != "SUSE Manager" {
-		product = "uyuni"
-		v, err := ScannerFunc(rhndefault, "web.version.uyuni = ")
-		if err != nil {
-			v, err = ScannerFunc(webpath, "web.version.uyuni = ")
-			if err != nil {
-				log.Fatal().Msg("No version found")
+	files := []string{rhndefault, webpath, altpath}
+	property := []string{"product_name", "web.product_name"}
+	product = "SUSE Manager"
+	for _, path:= range files {
+		for _, search := range property {
+			p, err := ScannerFunc(path, search)
+			if err == nil {
+				product = p
+				break
+			} else if err != nil {
+				continue
 			}
 		}
+	}
 
+	if product != "SUSE Manager" {
+		product = "uyuni"
+		v, err := ScannerFunc(rhndefault, "web.version.uyuni")
+		if err != nil {
+			v, err = ScannerFunc(webpath, "web.version.uyuni")
+			if err != nil {
+				log.Fatal().Msgf("No version found for product %s", product)
+			}
+		}
 		version = v
 	} else if product == "SUSE Manager" {
-		v, err := ScannerFunc(rhndefault, "web.version = ")
+		v, err := ScannerFunc(rhndefault, "web.version")
 		if err != nil {
-			v, err = ScannerFunc(webpath, "web.version = ")
+			v, err = ScannerFunc(webpath, "web.version")
 		}
 		if err != nil {
-			log.Fatal().Msg("No version found")
+			log.Fatal().Msgf("No version found for product %s", product)
 		}
 		version = v
 	}
@@ -95,7 +101,6 @@ func ScannerFunc(path string, search string) (string, error) {
 		if strings.Contains(scanner.Text(), search) {
 			splits := strings.Split(scanner.Text(), "= ")
 			output = splits[1]
-			fmt.Printf("output: %s\n", output)
 			return output, nil
 		}
 	}

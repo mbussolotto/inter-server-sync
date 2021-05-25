@@ -26,10 +26,10 @@ func init() {
 func runImport(cmd *cobra.Command, args []string) {
 	absImportDir := utils.GetAbsPath(importDir)
 	log.Info().Msg(fmt.Sprintf("starting import from dir %s", absImportDir))
-	fversion, fproduct := getImportVersion(absImportDir)
+	fversion, fproduct := getImportVersionProduct(absImportDir)
 	sversion, sproduct := utils.GetCurrentServerVersion()
 	if fversion != sversion || fproduct != sproduct {
-		log.Fatal().Msg("Wrong version detected")
+		log.Fatal().Msgf("Wrong version detected. Fileversion = %s ; Serverversion = %s", fversion, sversion)
 	}
 	validateFolder(absImportDir)
 	runPackageFileSync(absImportDir)
@@ -37,7 +37,7 @@ func runImport(cmd *cobra.Command, args []string) {
 	log.Info().Msg("import finished")
 }
 
-func getImportVersion(path string) (string, string) {
+func getImportVersionProduct(path string) (string, string) {
 	var versionfile string
 	versionfile = path + "/version.txt"
 	version, err := utils.ScannerFunc(versionfile, "version = ")
