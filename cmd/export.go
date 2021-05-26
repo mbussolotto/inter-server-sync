@@ -55,5 +55,5 @@ func runExport(cmd *cobra.Command, args []string) {
 		vf = f
 	}
 	version, product := utils.GetCurrentServerVersion()
-	vf.WriteString("product_name = " + product + "\n" + "version =" + version + "\n")
+	vf.WriteString("product_name = " + product + "\n" + "version = " + version + "\n")
 }

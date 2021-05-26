@@ -60,7 +60,7 @@ func GetCurrentServerVersion() (string, string) {
 			if err == nil {
 				product = p
 				break
-			} else if err != nil {
+			} else {
 				continue
 			}
 		}
@@ -76,7 +76,7 @@ func GetCurrentServerVersion() (string, string) {
 			}
 		}
 		version = v
-	} else if product == "SUSE Manager" {
+	} else {
 		v, err := ScannerFunc(rhndefault, "web.version")
 		if err != nil {
 			v, err = ScannerFunc(webpath, "web.version")
@@ -99,8 +99,14 @@ func ScannerFunc(path string, search string) (string, error) {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), search) {
-			splits := strings.Split(scanner.Text(), "= ")
+			splits := strings.Split(scanner.Text(), "=")
 			output = splits[1]
+			if output == " SUSE Manager" {
+				output = strings.Replace(output, " SUSE Manager", "SUSE Manager", 1 )
+			} else {
+				splits = strings.Split(output, " ")
+				output = splits[len(splits)-1]
+			}
 			return output, nil
 		}
 	}

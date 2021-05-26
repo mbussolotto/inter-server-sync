@@ -40,11 +40,11 @@ func runImport(cmd *cobra.Command, args []string) {
 func getImportVersionProduct(path string) (string, string) {
 	var versionfile string
 	versionfile = path + "/version.txt"
-	version, err := utils.ScannerFunc(versionfile, "version = ")
+	version, err := utils.ScannerFunc(versionfile, "version")
 	if err != nil {
 		log.Error().Msg("Version not found.")
 	}
-	product, err := utils.ScannerFunc(versionfile, "product_name = ")
+	product, err := utils.ScannerFunc(versionfile, "product_name")
 	if err != nil {
 		log.Fatal().Msg("Product not found")
 	}
