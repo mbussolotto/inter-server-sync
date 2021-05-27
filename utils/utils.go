@@ -46,47 +46,40 @@ func GetAbsPath(path string) string {
 }
 
 func GetCurrentServerVersion() (string, string) {
-	var version, product string
 	rhndefault := "/etc/rhn/rhn.conf"
 	webpath := "/usr/share/rhn/config-defaults/rhn_web.conf"
 	altpath := "/usr/share/rhn/config-defaults/rhn.conf"
 
 	files := []string{rhndefault, webpath, altpath}
 	property := []string{"product_name", "web.product_name"}
-	product = "SUSE Manager"
-	for _, path:= range files {
-		for _, search := range property {
-			p, err := ScannerFunc(path, search)
-			if err == nil {
-				product = p
-				break
-			} else {
-				continue
-			}
-		}
+	product := "SUSE Manager"
+	p, err := getProperty(files,property)
+	if err == nil{
+		product = p
 	}
 
+	propertyVersion := []string{"web.version"}
 	if product != "SUSE Manager" {
+		propertyVersion = []string{"web.version.uyuni"}
 		product = "uyuni"
-		v, err := ScannerFunc(rhndefault, "web.version.uyuni")
-		if err != nil {
-			v, err = ScannerFunc(webpath, "web.version.uyuni")
-			if err != nil {
-				log.Fatal().Msgf("No version found for product %s", product)
-			}
-		}
-		version = v
-	} else {
-		v, err := ScannerFunc(rhndefault, "web.version")
-		if err != nil {
-			v, err = ScannerFunc(webpath, "web.version")
-		}
-		if err != nil {
-			log.Fatal().Msgf("No version found for product %s", product)
-		}
-		version = v
+	}
+	version, err := getProperty(files, propertyVersion)
+	if err != nil {
+		log.Fatal().Msgf("No version found for product %s", product)
 	}
 	return version, product
+}
+
+func getProperty(filePaths []string, names[]string) (string, error) {
+	for _, path:= range filePaths {
+		for _, search := range names {
+			p, err := ScannerFunc(path, search)
+			if err == nil {
+				return p, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("String not found!")
 }
 
 func ScannerFunc(path string, search string) (string, error) {
