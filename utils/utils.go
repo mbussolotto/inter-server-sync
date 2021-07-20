@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -46,10 +47,15 @@ func GetAbsPath(path string) string {
 }
 
 func GetCurrentServerVersion() (string, string) {
+
 	rhndefault := "/etc/rhn/rhn.conf"
 	webpath := "/usr/share/rhn/config-defaults/rhn_web.conf"
 	altpath := "/usr/share/rhn/config-defaults/rhn.conf"
-
+/*
+	rhndefault := "rhndefault"
+	webpath := "webpath"
+	altpath := "altpath"
+ */
 	files := []string{rhndefault, webpath, altpath}
 	property := []string{"product_name", "web.product_name"}
 	product := "SUSE Manager"
@@ -104,4 +110,34 @@ func ScannerFunc(path string, search string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("String not found!")
+}
+
+func ValidateExportFolder(outputFolderAbs string) {
+	outputFolder, err := os.Open(outputFolderAbs)
+	defer outputFolder.Close()
+	if err != nil {
+		if os.IsNotExist(err) {
+			err := os.MkdirAll(outputFolderAbs, 0755)
+			if err != nil {
+				log.Fatal().Err(err).Msg("Error creating dir")
+			}
+			outputFolder, _ = os.Open(outputFolderAbs)
+		} else {
+			log.Fatal().Err(err).Msg("Error getting output foulder")
+		}
+
+	}
+	folderInfo, err := outputFolder.Stat()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error getting folder info")
+	}
+
+	if !folderInfo.IsDir() {
+		log.Fatal().Err(err).Msg(fmt.Sprintf("export location is not a directory: %s", outputFolderAbs))
+	}
+	_, errEmpty := outputFolder.Readdirnames(1) // Or f.Readdir(1)
+	if errEmpty != io.EOF {
+		log.Fatal().Msg(fmt.Sprintf("export location is not empty: %s", outputFolderAbs))
+
+	}
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/uyuni-project/inter-server-sync/dumper/packageDumper"
 	"github.com/uyuni-project/inter-server-sync/schemareader"
 	"github.com/uyuni-project/inter-server-sync/sqlUtil"
-	"io"
 	"os"
 )
 
@@ -94,8 +93,7 @@ func ProductsTableNames() []string {
 }
 
 func DumpChannelData(options ChannelDumperOptions) {
-	var outputFolderAbs = options.getOutputFolderAbsPath()
-	validateExportFolder(outputFolderAbs)
+	var outputFolderAbs = options.GetOutputFolderAbsPath()
 	db := schemareader.GetDBconnection(options.ServerConfig)
 	defer db.Close()
 	file, err := os.Create(outputFolderAbs + "/sql_statements.sql")
@@ -116,35 +114,7 @@ func DumpChannelData(options ChannelDumperOptions) {
 	bufferWriter.WriteString("COMMIT;\n")
 }
 
-func validateExportFolder(outputFolderAbs string) {
-	outputFolder, err := os.Open(outputFolderAbs)
-	defer outputFolder.Close()
-	if err != nil {
-		if os.IsNotExist(err) {
-			err := os.MkdirAll(outputFolderAbs, 0755)
-			if err != nil {
-				log.Fatal().Err(err).Msg("Error creating dir")
-			}
-			outputFolder, _ = os.Open(outputFolderAbs)
-		} else {
-			log.Fatal().Err(err).Msg("Error getting output foulder")
-		}
 
-	}
-	folderInfo, err := outputFolder.Stat()
-	if err != nil {
-		log.Fatal().Err(err).Msg("Error getting folder info")
-	}
-
-	if !folderInfo.IsDir() {
-		log.Fatal().Err(err).Msg(fmt.Sprintf("export location is not a directory: %s", outputFolderAbs))
-	}
-
-	_, errEmpty := outputFolder.Readdirnames(1) // Or f.Readdir(1)
-	if errEmpty != io.EOF {
-		log.Fatal().Msg(fmt.Sprintf("export location is not empty: %s", outputFolderAbs))
-	}
-}
 
 var childChannelSql = "select label from rhnchannel " +
 	"where parent_channel = (select id from rhnchannel where label = $1)"
@@ -195,7 +165,7 @@ func processAndInsertChannels(db *sql.DB, writer *bufio.Writer, channels []strin
 	schemaMetadata := schemareader.ReadTablesSchema(db, SoftwareChannelTableNames())
 	log.Debug().Msg("channel schema metadata loaded")
 
-	fileChannels, err := os.Create(options.getOutputFolderAbsPath() + "/exportedChannels.txt")
+	fileChannels, err := os.Create(options.GetOutputFolderAbsPath() + "/exportedChannels.txt")
 	if err != nil {
 		log.Fatal().Err(err).Msg("error creating sql file")
 		panic(err)
@@ -235,7 +205,7 @@ func processChannel(db *sql.DB, writer *bufio.Writer, channelLabel string,
 
 	if !options.MetadataOnly {
 		log.Debug().Msg("dumping all package files")
-		packageDumper.DumpPackageFiles(db, schemaMetadata, tableData, options.getOutputFolderAbsPath())
+		packageDumper.DumpPackageFiles(db, schemaMetadata, tableData, options.GetOutputFolderAbsPath())
 	}
 	log.Debug().Msg("channel export finished")
 

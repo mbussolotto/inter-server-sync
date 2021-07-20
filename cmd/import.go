@@ -32,7 +32,7 @@ func runImport(cmd *cobra.Command, args []string) {
 		log.Fatal().Msgf("Wrong version detected. Fileversion = %s ; Serverversion = %s", fversion, sversion)
 	}
 	validateFolder(absImportDir)
-	runPackageFileSync(absImportDir)
+	//runPackageFileSync(absImportDir)
 	runImportSql(absImportDir)
 	log.Info().Msg("import finished")
 }
@@ -82,5 +82,11 @@ func runImportSql(absImportDir string) {
 	err := cmd.Run()
 	if err != nil {
 		log.Fatal().Err(err).Msg("error running the sql script")
+	}
+	//run spacewalk for configuration
+	cmd = exec.Command("spacewalk-sql", fmt.Sprintf("%s/configurations.sql", absImportDir))
+	err = cmd.Run()
+	if err != nil {
+		log.Fatal().Err(err).Msg("error running the sql script (configurations)")
 	}
 }

@@ -323,12 +323,15 @@ func formatOnConflict(row []sqlUtil.RowDataStructure, table schemareader.Table) 
 	switch table.Name {
 	case "rhnerrataseverity":
 		constraint = "(id)"
+	case "rhnconfigcontent":
+		constraint = "(id)"
 	case "rhnerrata":
 		// TODO rhnerrata and rhnpackageevr logic is similar, so we extract to one method on future
 		var orgId interface{} = nil
 		for _, field := range row {
 			if strings.Compare(field.ColumnName, "org_id") == 0 {
 				orgId = field.Value
+				break
 			}
 		}
 		if orgId == nil {
@@ -348,6 +351,7 @@ func formatOnConflict(row []sqlUtil.RowDataStructure, table schemareader.Table) 
 		} else {
 			return "(version, release, epoch, ((evr).type)) WHERE epoch IS NOT NULL DO NOTHING"
 		}
+
 	case "rhnpackagecapability":
 		var version interface{} = nil
 		for _, field := range row {

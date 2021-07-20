@@ -42,6 +42,7 @@ func runExport(cmd *cobra.Command, args []string) {
 		OutputFolder:              outputDir,
 		MetadataOnly:              metadataOnly,
 	}
+	utils.ValidateExportFolder(options.GetOutputFolderAbsPath())
 	entityDumper.DumpChannelData(options)
 	var versionfile string
 	versionfile = options.GetOutputFolderAbsPath() + "/version.txt"
@@ -56,4 +57,7 @@ func runExport(cmd *cobra.Command, args []string) {
 	}
 	version, product := utils.GetCurrentServerVersion()
 	vf.WriteString("product_name = " + product + "\n" + "version = " + version + "\n")
+	entityDumper.DumpConfigs(options)
 }
+
+
