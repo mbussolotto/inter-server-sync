@@ -11,6 +11,7 @@ type ChannelDumperOptions struct {
 	OutputFolder string
 	outputFolderAbsPath string
 	MetadataOnly bool
+	ConfigLabels []string
 }
 
 func (opt *ChannelDumperOptions) GetOutputFolderAbsPath() string {

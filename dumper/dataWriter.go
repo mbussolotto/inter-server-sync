@@ -323,8 +323,37 @@ func formatOnConflict(row []sqlUtil.RowDataStructure, table schemareader.Table) 
 	switch table.Name {
 	case "rhnerrataseverity":
 		constraint = "(id)"
-	case "rhnconfigcontent":
-		constraint = "(id)"
+
+	case "rhnconfiginfo":
+		constraint =  "(username, groupname, filemode) WHERE username IS NOT NULL AND groupname IS NOT NULL AND filemode IS NOT NULL AND selinux_ctx IS NULL AND symlink_target_filename_id IS NULL"
+		for _, field := range row {
+			if strings.Compare(field.ColumnName, "username") == 0 {
+				if strings.Compare(field.ColumnName, "groupname") == 0 {
+					if strings.Compare(field.ColumnName, "filemode") == 0 {
+						if strings.Compare(field.ColumnName, "selinux_ctx") != 0 {
+							if strings.Compare(field.ColumnName, "symlink_target_filename") != 0 {
+								constraint = "(symlink_target_filename_id, selinux_ctx) WHERE username IS NULL AND groupname IS NULL AND filemode IS NULL AND selinux_ctx IS NOT NULL AND symlink_target_filename_id IS NOT NULL"
+							}
+						} else if strings.Compare(field.ColumnName, "selinux_ctx") == 0 {
+							if strings.Compare(field.ColumnName, "symlink_target_filename") != 0 {
+								constraint = "(symlink_target_filename_id) WHERE username IS NULL AND groupname IS NULL AND filemode IS NULL AND selinux_ctx IS NULL AND symlink_target_filename_id IS NOT NULL"
+							}
+						}
+					}
+				}
+			} else if strings.Compare(field.ColumnName, "username") != 0 {
+				if strings.Compare(field.ColumnName, "groupname") != 0 {
+					if strings.Compare(field.ColumnName, "filemode") != 0 {
+						if strings.Compare(field.ColumnName, "selinux_ctx") != 0 {
+							if strings.Compare(field.ColumnName, "symlink_target_filename") == 0 {
+								constraint = "(username, groupname, filemode, selinux_ctx) WHERE username IS NOT NULL AND groupname IS NOT NULL AND filemode IS NOT NULL AND selinux_ctx IS NOT NULL AND symlink_target_filename_id IS NULL"
+							}
+						}
+					}
+				}
+			}
+		}
+
 	case "rhnerrata":
 		// TODO rhnerrata and rhnpackageevr logic is similar, so we extract to one method on future
 		var orgId interface{} = nil

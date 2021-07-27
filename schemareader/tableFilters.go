@@ -34,6 +34,10 @@ func applyTableFilters(table Table) Table {
 	case "rhnpackagecapability":
 		// pkid: rhn_pkg_capability_id_pk
 		table.PKSequence = "RHN_PKG_CAPABILITY_ID_SEQ"
+	case "rhnconfigfiletype":
+		virtualIndexColumns := []string{"label"}
+		table.UniqueIndexes[VirtualIndexName] = UniqueIndex{Name: VirtualIndexName, Columns: virtualIndexColumns}
+		table.MainUniqueIndexName = VirtualIndexName
 	}
 	return table
 }
