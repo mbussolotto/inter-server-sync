@@ -13,7 +13,7 @@ import (
 )
 
 func ConfigTableNames() []string {
-	return []string {
+	return []string{
 		"rhnconfigfile",
 		"rhnconfigfilename",
 		"rhnconfigrevision",
@@ -76,7 +76,6 @@ func loadConfigsToProcess(db *sql.DB, options ChannelDumperOptions) []string {
 	return labels.channels
 }
 
-
 func processConfigs(db *sql.DB, writer *bufio.Writer, labels []string, options ChannelDumperOptions) {
 	log.Info().Msg(fmt.Sprintf("%d channels to process", len(labels)))
 	schemaMetadata := schemareader.ReadTablesSchema(db, ConfigTableNames())
@@ -91,7 +90,7 @@ func processConfigs(db *sql.DB, writer *bufio.Writer, labels []string, options C
 	defer bufferWriterChannels.Flush()
 
 	count := 0
-	for _, l := range  labels{
+	for _, l := range labels {
 		count++
 		log.Info().Msg(fmt.Sprintf("Processing channel [%d/%d] %s", count, len(labels), l))
 		processConfigChannel(db, writer, l, schemaMetadata, options)
@@ -122,5 +121,3 @@ func processConfigChannel(db *sql.DB, writer *bufio.Writer, channelLabel string,
 	}
 	log.Debug().Msg("config channel export finished")
 }
-
-

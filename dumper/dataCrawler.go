@@ -20,7 +20,7 @@ func DataCrawler(db *sql.DB, schemaMetadata map[string]schemareader.Table, start
 IterateItemsLoop:
 	for len(itemsToProcess) > 0 {
 		itemToProcess := itemsToProcess[len(itemsToProcess)-1]
-		itemsToProcess = itemsToProcess[0:len(itemsToProcess)-1]
+		itemsToProcess = itemsToProcess[0 : len(itemsToProcess)-1]
 
 		table, tableExists := schemaMetadata[itemToProcess.tableName]
 		if !tableExists {
@@ -140,18 +140,18 @@ func shouldFollowReferenceToLink(path []string, currentTable schemareader.Table,
 		}
 	}
 
-	forcedNavegations := map[string] []string {
+	forcedNavegations := map[string][]string{
 		"rhnchannelfamily": {"rhnpublicchannelfamily"},
-		"rhnchannel": {"susemddata", "suseproductchannel", "rhnreleasechannelmap", "rhndistchannelmap"},
-		"suseproducts": {"suseproductextension", "suseproductsccrepository"},
-		"rhnpackageevr": {"rhnpackagenevra"},
-		"rhnerrata": {"rhnerratafile"},
-		"rhnerratafile": {"rhnerratafilechannel"},
+		"rhnchannel":       {"susemddata", "suseproductchannel", "rhnreleasechannelmap", "rhndistchannelmap"},
+		"suseproducts":     {"suseproductextension", "suseproductsccrepository"},
+		"rhnpackageevr":    {"rhnpackagenevra"},
+		"rhnerrata":        {"rhnerratafile"},
+		"rhnerratafile":    {"rhnerratafilechannel"},
 	}
 
 	if tableNavigation, ok := forcedNavegations[currentTable.Name]; ok {
-		for _, targetNavigationTable := range tableNavigation{
-			if strings.Compare(targetNavigationTable, referencedTable.Name) == 0{
+		for _, targetNavigationTable := range tableNavigation {
+			if strings.Compare(targetNavigationTable, referencedTable.Name) == 0 {
 				return true
 			}
 		}

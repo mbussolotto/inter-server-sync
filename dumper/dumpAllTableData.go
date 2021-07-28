@@ -15,12 +15,12 @@ func DumpAllTablesData(db *sql.DB, writer *bufio.Writer, schemaMetadata map[stri
 
 	processedTables := make(map[string]bool)
 	// exporting from the starting tables.
-	for _, startingTable := range startingTables{
+	for _, startingTable := range startingTables {
 		processedTables = printAllTableData(db, writer, schemaMetadata, startingTable, whereFilterClause, processedTables, make([]string, 0), onlyIfParentExistsTables)
 	}
 	// Export tables not exported when exporting the starting tables
-	for schemaTableName, schemaTable := range schemaMetadata{
-		if !schemaTable.Export{
+	for schemaTableName, schemaTable := range schemaMetadata {
+		if !schemaTable.Export {
 			continue
 		}
 		_, ok := processedTables[schemaTableName]
@@ -32,8 +32,8 @@ func DumpAllTablesData(db *sql.DB, writer *bufio.Writer, schemaMetadata map[stri
 }
 
 func printAllTableData(db *sql.DB, writer *bufio.Writer, schemaMetadata map[string]schemareader.Table, table schemareader.Table,
-	whereFilterClause func(table schemareader.Table) string, processedTables map[string]bool, path []string, onlyIfParentExistsTables[]string) map[string]bool {
-	log.Debug().Msgf("%s", "Processing table: " + table.Name)
+	whereFilterClause func(table schemareader.Table) string, processedTables map[string]bool, path []string, onlyIfParentExistsTables []string) map[string]bool {
+	log.Debug().Msgf("%s", "Processing table: "+table.Name)
 	_, tableProcessed := processedTables[table.Name]
 	currentTable := schemaMetadata[table.Name]
 	if tableProcessed || !currentTable.Export {
@@ -44,10 +44,10 @@ func printAllTableData(db *sql.DB, writer *bufio.Writer, schemaMetadata map[stri
 
 	for _, reference := range table.References {
 		tableReference, ok := schemaMetadata[reference.TableName]
-		if !ok || !tableReference.Export{
+		if !ok || !tableReference.Export {
 			continue
 		}
-		log.Debug().Msgf("%s", "Table processed: " + table.Name)
+		log.Debug().Msgf("%s", "Table processed: "+table.Name)
 		printAllTableData(db, writer, schemaMetadata, tableReference, whereFilterClause, processedTables, path, onlyIfParentExistsTables)
 
 	}
@@ -56,7 +56,7 @@ func printAllTableData(db *sql.DB, writer *bufio.Writer, schemaMetadata map[stri
 
 	for _, reference := range table.ReferencedBy {
 		tableReference, ok := schemaMetadata[reference.TableName]
-		if !ok || !tableReference.Export{
+		if !ok || !tableReference.Export {
 			continue
 		}
 		if !shouldFollowReferenceToLink(path, table, tableReference) {

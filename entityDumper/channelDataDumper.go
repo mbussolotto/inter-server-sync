@@ -114,8 +114,6 @@ func DumpChannelData(options ChannelDumperOptions) {
 	bufferWriter.WriteString("COMMIT;\n")
 }
 
-
-
 var childChannelSql = "select label from rhnchannel " +
 	"where parent_channel = (select id from rhnchannel where label = $1)"
 

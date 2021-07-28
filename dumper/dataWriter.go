@@ -20,15 +20,15 @@ var cache = make(map[string]string)
 func PrintTableDataOrdered(db *sql.DB, writer *bufio.Writer, schemaMetadata map[string]schemareader.Table,
 	startingTable schemareader.Table, data DataDumper, options PrintSqlOptions) {
 
-	printCleanTables(writer, schemaMetadata,startingTable, make(map[string]bool), make([]string, 0), options)
+	printCleanTables(writer, schemaMetadata, startingTable, make(map[string]bool), make([]string, 0), options)
 	printTableData(db, writer, schemaMetadata, data, startingTable, make(map[string]bool), make([]string, 0), options)
 }
 
 /**
 clear tables need to be printed in reverse order, otherwise it will not work
- */
+*/
 func printCleanTables(writer *bufio.Writer, schemaMetadata map[string]schemareader.Table, table schemareader.Table,
-	processedTables map[string]bool, path []string, options PrintSqlOptions){
+	processedTables map[string]bool, path []string, options PrintSqlOptions) {
 
 	_, tableProcessed := processedTables[table.Name]
 	// if the current table should not be export we are interrupting the crawler process for these table
@@ -325,7 +325,7 @@ func formatOnConflict(row []sqlUtil.RowDataStructure, table schemareader.Table) 
 		constraint = "(id)"
 
 	case "rhnconfiginfo":
-		constraint =  "(username, groupname, filemode) WHERE username IS NOT NULL AND groupname IS NOT NULL AND filemode IS NOT NULL AND selinux_ctx IS NULL AND symlink_target_filename_id IS NULL"
+		constraint = "(username, groupname, filemode) WHERE username IS NOT NULL AND groupname IS NOT NULL AND filemode IS NOT NULL AND selinux_ctx IS NULL AND symlink_target_filename_id IS NULL"
 		for _, field := range row {
 			if strings.Compare(field.ColumnName, "username") == 0 {
 				if strings.Compare(field.ColumnName, "groupname") == 0 {
@@ -514,5 +514,3 @@ func generateRowInsertStatement(db *sql.DB, values []sqlUtil.RowDataStructure, t
 	}
 
 }
-
-
