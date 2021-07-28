@@ -42,7 +42,7 @@ func runExport(cmd *cobra.Command, args []string) {
 		ChannelWithChildrenLabels: channelWithChildren,
 		OutputFolder:              outputDir,
 		MetadataOnly:              metadataOnly,
-		ConfigLabels:			   labels,
+		ConfigLabels:              labels,
 	}
 	utils.ValidateExportFolder(options.GetOutputFolderAbsPath())
 	entityDumper.DumpChannelData(options)
@@ -61,5 +61,3 @@ func runExport(cmd *cobra.Command, args []string) {
 	vf.WriteString("product_name = " + product + "\n" + "version = " + version + "\n")
 	entityDumper.DumpConfigs(options)
 }
-
-
