@@ -55,7 +55,10 @@ func getImportVersionProduct(path string) (string, string) {
 func validateFolder(absImportDir string) {
 	_, err := os.Stat(fmt.Sprintf("%s/sql_statements.sql", absImportDir))
 	if os.IsNotExist(err) {
-		log.Fatal().Err(err).Msg("sql file doesn't exists on import directory.")
+		_, err := os.Stat(fmt.Sprintf("%s/configurations.sql", absImportDir))
+		if os.IsNotExist(err) {
+			log.Fatal().Err(err).Msg("No usable .sql files found in import directory")
+		}
 	}
 }
 
@@ -74,19 +77,31 @@ func runPackageFileSync(absImportDir string) {
 }
 
 func runImportSql(absImportDir string) {
-	cmd := exec.Command("spacewalk-sql", fmt.Sprintf("%s/sql_statements.sql", absImportDir))
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	log.Info().Msg("starting sql import")
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal().Err(err).Msg("error running the sql script")
-	}
-	//run spacewalk for configuration
-	cmd = exec.Command("spacewalk-sql", fmt.Sprintf("%s/configurations.sql", absImportDir))
-	err = cmd.Run()
-	if err != nil {
-		log.Fatal().Err(err).Msg("error running the sql script (configurations)")
-	}
+	func() {
+		_, err := os.Stat(fmt.Sprintf("%s/sql_statements.sql", absImportDir))
+		if os.IsExist(err) {
+			cmd := exec.Command("spacewalk-sql", fmt.Sprintf("%s/sql_statements.sql", absImportDir))
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			log.Info().Msg("starting sql import")
+			err := cmd.Run()
+			if err != nil {
+				log.Fatal().Err(err).Msg("error running the sql script")
+			}
+		}
+	}()
+
+	func() {
+		_, err := os.Stat(fmt.Sprintf("%s/configurations.sql", absImportDir))
+		if err == nil {
+			cmd := exec.Command("spacewalk-sql", fmt.Sprintf("%s/configurations.sql", absImportDir))
+			err = cmd.Run()
+			if err != nil {
+				log.Fatal().Err(err).Msg("error running the sql script (configurations)")
+			}
+		}
+
+	}()
+
 }

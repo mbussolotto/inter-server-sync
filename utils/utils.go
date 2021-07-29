@@ -51,16 +51,12 @@ func GetCurrentServerVersion() (string, string) {
 	rhndefault := "/etc/rhn/rhn.conf"
 	webpath := "/usr/share/rhn/config-defaults/rhn_web.conf"
 	altpath := "/usr/share/rhn/config-defaults/rhn.conf"
-/*
-	rhndefault := "rhndefault"
-	webpath := "webpath"
-	altpath := "altpath"
- */
+
 	files := []string{rhndefault, webpath, altpath}
 	property := []string{"product_name", "web.product_name"}
 	product := "SUSE Manager"
-	p, err := getProperty(files,property)
-	if err == nil{
+	p, err := getProperty(files, property)
+	if err == nil {
 		product = p
 	}
 
@@ -76,8 +72,8 @@ func GetCurrentServerVersion() (string, string) {
 	return version, product
 }
 
-func getProperty(filePaths []string, names[]string) (string, error) {
-	for _, path:= range filePaths {
+func getProperty(filePaths []string, names []string) (string, error) {
+	for _, path := range filePaths {
 		for _, search := range names {
 			p, err := ScannerFunc(path, search)
 			if err == nil {
@@ -101,7 +97,7 @@ func ScannerFunc(path string, search string) (string, error) {
 			splits := strings.Split(scanner.Text(), "=")
 			output = splits[1]
 			if output == " SUSE Manager" {
-				output = strings.Replace(output, " SUSE Manager", "SUSE Manager", 1 )
+				output = strings.Replace(output, " SUSE Manager", "SUSE Manager", 1)
 			} else {
 				splits = strings.Split(output, " ")
 				output = splits[len(splits)-1]
