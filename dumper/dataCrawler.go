@@ -147,6 +147,8 @@ func shouldFollowReferenceToLink(path []string, currentTable schemareader.Table,
 		"rhnpackageevr":    {"rhnpackagenevra"},
 		"rhnerrata":        {"rhnerratafile"},
 		"rhnerratafile":    {"rhnerratafilechannel"},
+		"rhnconfigchannel": {"rhnconfigfile"},
+		"rhnconfigfile":    {"rhnconfigrevision"},
 	}
 
 	if tableNavigation, ok := forcedNavegations[currentTable.Name]; ok {

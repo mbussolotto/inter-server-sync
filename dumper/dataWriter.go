@@ -86,6 +86,9 @@ func printTableData(db *sql.DB, writer *bufio.Writer, schemaMetadata map[string]
 		if !ok || !tableReference.Export {
 			continue
 		}
+		if strings.Compare(table.Name, "rhnconfigfile") == 0 && strings.Compare(tableReference.Name, "rhnconfigrevision") == 0 {
+			continue
+		}
 		printTableData(db, writer, schemaMetadata, data, tableReference, processedTables, path, options)
 	}
 
@@ -121,6 +124,30 @@ func printTableData(db *sql.DB, writer *bufio.Writer, schemaMetadata map[string]
 		}
 		printTableData(db, writer, schemaMetadata, data, tableReference, processedTables, path, options)
 	}
+
+	if strings.Compare(table.Name, "rhnconfigfile") == 0{
+		if dataOK {
+			exportPoint := 0
+			batch := 100
+			for len(tableData.Keys) > exportPoint {
+				upperLimit := exportPoint + batch
+				if upperLimit > len(tableData.Keys) {
+					upperLimit = len(tableData.Keys)
+				}
+				rows := GetRowsFromKeys(db, table, tableData.Keys[exportPoint:upperLimit])
+				for _, rowValue := range rows {
+					rowValue = substituteForeignKey(db, table, schemaMetadata, rowValue)
+					updateString := genUpdateForReference(table, rowValue)
+					writer.WriteString(updateString + "\n")
+				}
+				exportPoint = upperLimit
+			}
+		}
+	}
+}
+
+func genUpdateForReference(table schemareader.Table, value []sqlUtil.RowDataStructure) string {
+	return "update rhnconfigfile set latest_config_revision_id=bla where config_file_name_id=1 and config_channel_id=1;"
 }
 
 // GetRowsFromKeys check if we should move this to a method in the type tableData

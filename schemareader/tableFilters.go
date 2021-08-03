@@ -38,6 +38,10 @@ func applyTableFilters(table Table) Table {
 		virtualIndexColumns := []string{"label"}
 		table.UniqueIndexes[VirtualIndexName] = UniqueIndex{Name: VirtualIndexName, Columns: virtualIndexColumns}
 		table.MainUniqueIndexName = VirtualIndexName
+	case "rhnconfigfile":
+		unexportColumns := make(map[string]bool)
+		unexportColumns["latest_config_revision_id"] = true
+		table.UnexportColumns = unexportColumns
 	}
 	return table
 }
