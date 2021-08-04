@@ -147,7 +147,21 @@ func printTableData(db *sql.DB, writer *bufio.Writer, schemaMetadata map[string]
 }
 
 func genUpdateForReference(table schemareader.Table, value []sqlUtil.RowDataStructure) string {
-	return "update rhnconfigfile set latest_config_revision_id=bla where config_file_name_id=1 and config_channel_id=1;"
+	var updatestring string
+	var latest_config_revision_id, config_file_name_id, config_channel_id interface{}
+	for _, field := range value {
+		if strings.Compare(field.ColumnName, "latest_config_revision_id") == 0 {
+			latest_config_revision_id = field.Value
+		}
+		if strings.Compare(field.ColumnName, "config_file_name_id") == 0 {
+			config_file_name_id = field.Value
+		}
+		if strings.Compare(field.ColumnName, "config_channel_id") == 0 {
+			config_channel_id = field.Value
+		}
+	}
+	updatestring = fmt.Sprintf("update rhnconfigfile set latest_config_revision_id=%s where config_file_name_id=%s and config_channel_id=%s", latest_config_revision_id, config_file_name_id, config_channel_id)
+	return updatestring
 }
 
 // GetRowsFromKeys check if we should move this to a method in the type tableData
