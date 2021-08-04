@@ -160,7 +160,7 @@ func genUpdateForReference(table schemareader.Table, value []sqlUtil.RowDataStru
 			config_channel_id = field.Value
 		}
 	}
-	updatestring = fmt.Sprintf("update rhnconfigfile set latest_config_revision_id=%s where config_file_name_id=%s and config_channel_id=%s", latest_config_revision_id, config_file_name_id, config_channel_id)
+	updatestring = fmt.Sprintf("update rhnconfigfile set latest_config_revision_id = (%s) where config_file_name_id = (%s) and config_channel_id = (%s);", latest_config_revision_id, config_file_name_id, config_channel_id)
 	return updatestring
 }
 
