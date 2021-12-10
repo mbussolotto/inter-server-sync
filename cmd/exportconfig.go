@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+var labels []string
+
 var exportconfigsCmd = &cobra.Command{
 	Use:   "exportconfig",
 	Short: "Export server configurations to be imported in other server",

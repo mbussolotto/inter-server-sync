@@ -20,8 +20,6 @@ var channels []string
 var channelWithChildren []string
 var outputDir string
 var metadataOnly bool
-var labels []string
-
 
 func init() {
 	exportCmd.Flags().StringSliceVar(&channels, "channels", nil, "Channels to be exported")
